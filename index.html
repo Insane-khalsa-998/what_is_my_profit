@@ -5,131 +5,89 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Profit Calculator</title>
     <style>
-        /* Modern color scheme and responsive design */
+        /* Updated styles for new features */
         :root {
             --primary-color: #00ff9d;
             --secondary-color: #00b36b;
             --background-color: #1a1a1a;
             --card-color: #2d2d2d;
             --text-color: #ffffff;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
-        }
-
-        body {
-            background-color: var(--background-color);
-            min-height: 100vh;
-            padding: 20px;
-            color: var(--text-color);
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: var(--card-color);
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            color: var(--primary-color);
-            text-align: center;
-            margin-bottom: 30px;
+            --negative-red: #ff4444;
+            --positive-green: #00ff9d;
         }
 
         .input-group {
+            position: relative;
             margin-bottom: 20px;
         }
 
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: var(--text-color);
-            font-weight: bold;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #4d4d4d;
-            border-radius: 5px;
-            font-size: 16px;
-            background-color: #3d3d3d;
-            color: var(--text-color);
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--secondary-color);
-            color: white;
-            border: none;
-            border-radius: 5px;
+        .clear-field {
+            position: absolute;
+            right: 10px;
+            top: 35px;
             cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: var(--primary-color);
-        }
-
-        .result {
-            margin-top: 20px;
-            padding: 20px;
-            background-color: #3d3d3d;
-            border-radius: 5px;
+            color: #666;
+            font-weight: bold;
             display: none;
-            color: var(--text-color);
         }
 
-        .result.show {
+        .input-group:hover .clear-field {
             display: block;
         }
 
-        /* Responsive design for mobile devices */
-        @media (max-width: 480px) {
-            .container {
-                padding: 15px;
-            }
-
-            h1 {
-                font-size: 24px;
-            }
-
-            input, select, button {
-                font-size: 14px;
-            }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
         }
+
+        #summaryBox {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--card-color);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            min-width: 200px;
+            text-align: right;
+        }
+
+        .summary-item {
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+
+        .profit { color: var(--positive-green); }
+        .loss { color: var(--negative-red); }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Crypto Profit Calculator</h1>
         
-    
         <div class="input-group">
             <label for="investment">Investment Amount ($):</label>
             <input type="number" id="investment" placeholder="Enter your investment amount">
+            <span class="clear-field" onclick="clearField('investment')">×</span>
         </div>
 
         <div class="input-group">
             <label for="oldPrice">Entry Price ($):</label>
             <input type="number" id="oldPrice" placeholder="Enter the price you bought at">
+            <span class="clear-field" onclick="clearField('oldPrice')">×</span>
         </div>
 
         <div class="input-group">
             <label for="newPrice">Current/Exit Price ($):</label>
             <input type="number" id="newPrice" placeholder="Enter the current or selling price">
+            <span class="clear-field" onclick="clearField('newPrice')">×</span>
         </div>
 
-        <button onclick="calculateProfit()">Calculate Profit/Loss</button>
+        <div class="button-group">
+            <button onclick="calculateProfit()">Calculate Profit/Loss</button>
+            <button onclick="clearAll()" style="background-color: #444">Clear All</button>
+        </div>
 
         <div class="result" id="result">
             <h3>Results:</h3>
@@ -139,41 +97,61 @@
         </div>
     </div>
 
+    <div id="summaryBox">
+        <div class="summary-item" id="summaryInvestment">Invested: $0.00</div>
+        <div class="summary-item" id="summaryProfit">Profit/Loss: $0.00</div>
+    </div>
+
     <script>
         function calculateProfit() {
-            // Get input values
             const investment = parseFloat(document.getElementById('investment').value);
             const oldPrice = parseFloat(document.getElementById('oldPrice').value);
             const newPrice = parseFloat(document.getElementById('newPrice').value);
-           
 
-            // Validate inputs
             if (!investment || !oldPrice || !newPrice) {
                 alert('Please fill in all fields with valid numbers');
                 return;
             }
 
-            // Calculate results
             const numberOfCoins = investment / oldPrice;
             const currentValue = numberOfCoins * newPrice;
             const profitLoss = currentValue - investment;
             const roi = (profitLoss / investment) * 100;
 
-            // Display results
-            const resultDiv = document.getElementById('result');
+            // Update main results
             const profitLossElement = document.getElementById('profitLoss');
-            const roiElement = document.getElementById('roi');
-            const coinsElement = document.getElementById('coins');
-
             profitLossElement.textContent = `Profit/Loss: $${profitLoss.toFixed(2)}`;
-            profitLossElement.style.color = profitLoss >= 0 ? 'green' : 'red';
+            profitLossElement.style.color = profitLoss >= 0 ? 'var(--positive-green)' : 'var(--negative-red)';
             
-            roiElement.textContent = `ROI: ${roi.toFixed(2)}%`;
-            roiElement.style.color = roi >= 0 ? 'green' : 'red';
-            
-            coinsElement.textContent = `Coins Owned: ${numberOfCoins.toFixed(8)}`;
+            document.getElementById('roi').textContent = `ROI: ${roi.toFixed(2)}%`;
+            document.getElementById('coins').textContent = `Coins Owned: ${numberOfCoins.toFixed(8)}`;
+            document.getElementById('result').classList.add('show');
 
-            resultDiv.classList.add('show');
+            // Update summary box
+            document.getElementById('summaryInvestment').textContent = `Invested: $${investment.toFixed(2)}`;
+            const summaryProfit = document.getElementById('summaryProfit');
+            summaryProfit.textContent = `Profit/Loss: $${profitLoss.toFixed(2)}`;
+            summaryProfit.className = `summary-item ${profitLoss >= 0 ? 'profit' : 'loss'}`;
+        }
+
+        function clearField(fieldId) {
+            document.getElementById(fieldId).value = '';
+            document.getElementById('result').classList.remove('show');
+            updateSummaryOnClear();
+        }
+
+        function clearAll() {
+            document.getElementById('investment').value = '';
+            document.getElementById('oldPrice').value = '';
+            document.getElementById('newPrice').value = '';
+            document.getElementById('result').classList.remove('show');
+            updateSummaryOnClear();
+        }
+
+        function updateSummaryOnClear() {
+            document.getElementById('summaryInvestment').textContent = 'Invested: $0.00';
+            document.getElementById('summaryProfit').textContent = 'Profit/Loss: $0.00';
+            document.getElementById('summaryProfit').className = 'summary-item';
         }
     </script>
 </body>
